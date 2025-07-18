@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -26,4 +27,39 @@ func Getstring(key string , fallback string) string { // whenever we want to loa
   }
 	// if response is true
 	return value
+}
+
+func Getint(key string , fallback int) int {
+	load()
+
+	value,response :=os.LookupEnv(key)
+
+	if !response {
+		return fallback
+	}
+	intValue,err :=strconv.Atoi(value)
+
+	if err!= nil{ // there is some error in conversion
+		fmt.Printf("Error converting %s to int: %v\n", key ,err)
+    return fallback
+	}
+	return intValue
+}
+
+func Getbool(key string , fallback bool) bool {
+	load()
+
+	value , response := os.LookupEnv(key)
+
+	if !response {
+		return fallback
+	}
+
+	boolValue , err := strconv.ParseBool(value)
+	if err!= nil{
+		fmt.Println("error on converting string to bool" , err)
+		return fallback
+	}
+	return boolValue
+
 }
