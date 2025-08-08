@@ -1,6 +1,9 @@
 package services
 
-import db "AuthInGo/db/repositories"
+import (
+	db "AuthInGo/db/repositories"
+	"fmt"
+)
 
 type UserService interface {
 	CreateUser() error
@@ -17,5 +20,7 @@ func NewUserService(_userRepository db.UserRepository) UserService {
 }
 
 func (u* UserServiceImp) CreateUser() error{
+	fmt.Println("Creating user in userService")
+	u.UserRepository.Create() // this will call the repository to create the user
 	return nil
 }

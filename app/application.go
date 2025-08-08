@@ -2,8 +2,10 @@ package app
 
 import (
 	config "AuthInGo/configuration/env"
+	"AuthInGo/controller"
 	db "AuthInGo/db/repositories"
 	"AuthInGo/router"
+	"AuthInGo/services"
 	"fmt"
 	"net/http"
 	"time"
@@ -38,9 +40,14 @@ func NewApplication(cfg Config) *Application {
 
 func (app *Application) Run() error {
 
+	ur := db.NewUserRepository()
+  us := services.NewUserService(ur)
+	uc := controller.NewUserController(us)
+  uRouter := router.NewUserRouter(uc)
+
 	server := &http.Server{
 		Addr:         app.Config.Addr,
-		Handler:      router.SetupRouter(), // use the router setup function to handle requests 
+		Handler:      router.SetupRouter(uRouter), // use the router setup function to handle requests 
 		ReadTimeout:  10 * time.Second, // Set read timeout to 10 seconds
 		WriteTimeout: 10 * time.Second, // Set write timeout to 10 seconds
 	}

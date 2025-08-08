@@ -1,7 +1,8 @@
 package db
 
 import (
-	"database/sql"
+	// "database/sql"
+	"fmt"
 )
 
 type UserRepository interface {
@@ -9,10 +10,17 @@ type UserRepository interface {
 }
 
 type UserRepositoryImple struct {
-  db *sql.DB
+  // db *sql.DB
+}
+
+func NewUserRepository() *UserRepositoryImple {
+	return &UserRepositoryImple{
+      // db: db,
+	}
 }
 
 func (u *UserRepositoryImple) Create() error {
+	fmt.Println("User is created in UserRepository")
 	return nil
 } 
 
