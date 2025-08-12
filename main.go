@@ -2,7 +2,9 @@ package main
 
 import (
 	"AuthInGo/app"
-	config "AuthInGo/configuration/env"
+	config "AuthInGo/config/env"
+
+	 dbConfig "AuthInGo/config/db"
 )
 
 func main() {
@@ -10,6 +12,8 @@ func main() {
 
 	cfg := app.NewConfig() // Set the server to listen on port 8080
 	app := app.NewApplication(cfg)
+
+	dbConfig.SetupDB() // initilize the db connection
 
 	app.Run() // call the run function from app folder
 }
