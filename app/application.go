@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+	dbConfig "AuthInGo/config/db"
+	repo "AuthInGo/db/repositories"
 )
 
 // Config holds the configuration for the server.
@@ -40,7 +42,13 @@ func NewApplication(cfg Config) *Application {
 
 func (app *Application) Run() error {
 
-	ur := db.NewUserRepository()
+	db,err :=dbConfig.SetupDB()
+   if err != nil{
+		fmt.Println("Error setting up database: ", err)
+		return err
+	 }
+
+	ur := repo.NewUserRepository(db)
   us := services.NewUserService(ur)
 	uc := controller.NewUserController(us)
   uRouter := router.NewUserRouter(uc)

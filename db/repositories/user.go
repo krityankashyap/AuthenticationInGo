@@ -2,6 +2,7 @@ package db
 
 import (
 	// "database/sql"
+	"database/sql"
 	"fmt"
 )
 
@@ -10,12 +11,12 @@ type UserRepository interface {
 }
 
 type UserRepositoryImple struct {
-  // db *sql.DB
+   db *sql.DB
 }
 
-func NewUserRepository() *UserRepositoryImple {
+func NewUserRepository(_db *sql.DB) *UserRepositoryImple {
 	return &UserRepositoryImple{
-      // db: db,
+       db: _db,
 	}
 }
 
