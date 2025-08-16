@@ -8,7 +8,8 @@ import (
 )
 
 type UserRepository interface {
-	GetByID() error
+	GetByID() (*models.User,error)
+	Create()  (error)
 }
 
 type UserRepositoryImple struct {
@@ -21,7 +22,35 @@ func NewUserRepository(_db *sql.DB) *UserRepositoryImple {
 	}
 }
 
-func (u *UserRepositoryImple) GetByID() error {
+func (u *UserRepositoryImple) Create() (error){
+	 
+		query := "INSERT INTO users (username,email,password) VALUES (?,?,?)"
+
+		result,err := u.db.Exec(query, "krityan", "krityan@example.com" , "12345") // Exec executes a query without returning any rows. The args are for any placeholder parameters in the query.
+
+		if err != nil{
+			fmt.Println("error while creating the user" , err)
+			return err
+		}
+
+		rowAffected,rowerr := result.RowsAffected()
+
+		if rowerr != nil{
+			fmt.Println("Error in row Affected", rowerr)
+			return rowerr
+		}
+
+		if rowAffected == 0{
+			fmt.Println("User is not created , No rows are affected")
+			return nil
+		}
+
+		fmt.Println("Creating user in repository", rowAffected) 
+    return nil
+}
+
+
+func (u *UserRepositoryImple) GetByID() (*models.User , error) {
 	fmt.Println("Fetching user by user repositories")
 
 	// step 1:- prepare the query
@@ -40,15 +69,15 @@ func (u *UserRepositoryImple) GetByID() error {
 	if err != nil{
 		if err == sql.ErrNoRows {
 			fmt.Println("No user with given ID")
-			return nil
+			return nil,err
 		} else {
 			fmt.Println("Error scanning user:", err)
-			return err
+			return nil,err
 		}
   }
   // step 4:- print the user details
 	fmt.Println("User fetched successfully:", User)
 
-	return nil
+	return nil,nil
 } 
 
