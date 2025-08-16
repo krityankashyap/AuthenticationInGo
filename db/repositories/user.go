@@ -10,6 +10,9 @@ import (
 type UserRepository interface {
 	GetByID() (*models.User,error)
 	Create()  (error)
+	GetAll()  ([]*models.User,error)
+	DeleteById(id int64)  error
+
 }
 
 type UserRepositoryImple struct {
@@ -80,4 +83,14 @@ func (u *UserRepositoryImple) GetByID() (*models.User , error) {
 
 	return nil,nil
 } 
+
+func (u *UserRepositoryImple) GetAll() ([]*models.User,error){
+	return nil,nil
+}
+
+func (u *UserRepositoryImple) DeleteById(id int64) error{
+	return nil
+}
+
+
 
