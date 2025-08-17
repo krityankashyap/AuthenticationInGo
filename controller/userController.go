@@ -27,3 +27,9 @@ func (uc *UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
 	uc.UserService.CreateUser() // Here u typically parse the request body, validate input, and call the service to create user
 	w.Write([]byte("User fetching endpoint done"))
 }
+
+func (uc *UserController) LoginUser(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Login User called in LoginUser controller")
+	uc.UserService.LoginUser()
+	w.Write([]byte("User fetching endpoint done"))
+}

@@ -16,3 +16,10 @@ func HashPassword(planePassword string) (string , error) {
 	 }
 	 return string(hash),nil
 }
+
+func CheckHashedPassword(planePassword string, hashedPassword string) bool { // this function is going to check wheather the user tries to login for the first time then the plane password is correct or not
+ 
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword) , []byte(planePassword))
+
+	return  err == nil
+}

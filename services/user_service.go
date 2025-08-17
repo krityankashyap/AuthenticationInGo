@@ -9,6 +9,7 @@ import (
 type UserService interface {
 	GetUserByID() error
 	CreateUser()  error
+	LoginUser()   error
 }
 
 type UserServiceImp struct {
@@ -39,4 +40,13 @@ func (u *UserServiceImp) CreateUser() error {
 	u.UserRepository.Create("example_Name_1", "example1@gmail.com", hashedPassword)
 
 	return nil
+}
+
+func (u *UserServiceImp) LoginUser() error {
+	response := utils.CheckHashedPassword("example_password" , "$2a$10$xqV5vZE53sxWSRhAJyCGgewusfhygXMRR2LZB4q26e8MGJKwMA.hO")
+  
+	fmt.Println("Login response: ", response)
+
+	return nil
+
 }
