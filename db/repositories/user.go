@@ -9,7 +9,7 @@ import (
 
 type UserRepository interface {
 	GetByID() (*models.User,error)
-	Create()  (error)
+	Create(usename string, email string, hashedPassword string)  (error)
 	GetAll()  ([]*models.User,error)
 	DeleteById(id int64)  error
 
@@ -25,11 +25,11 @@ func NewUserRepository(_db *sql.DB) *UserRepositoryImple {
 	}
 }
 
-func (u *UserRepositoryImple) Create() (error){
+func (u *UserRepositoryImple) Create(usename string, email string, hashedPassword string) (error){
 	 
 		query := "INSERT INTO users (username,email,password) VALUES (?,?,?)"
 
-		result,err := u.db.Exec(query, "krityan", "krityan@example.com" , "12345") // Exec executes a query without returning any rows. The args are for any placeholder parameters in the query.
+		result,err := u.db.Exec(query, usename, email , hashedPassword) // Exec executes a query without returning any rows. The args are for any placeholder parameters in the query.
 
 		if err != nil{
 			fmt.Println("error while creating the user" , err)
