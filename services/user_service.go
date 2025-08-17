@@ -43,9 +43,16 @@ func (u *UserServiceImp) CreateUser() error {
 }
 
 func (u *UserServiceImp) LoginUser() error {
-	response := utils.CheckHashedPassword("example_password" , "$2a$10$xqV5vZE53sxWSRhAJyCGgewusfhygXMRR2LZB4q26e8MGJKwMA.hO")
-  
-	fmt.Println("Login response: ", response)
+
+	// Prerequisite : this function will be given email and password as parameter, which we can hardcode for now
+
+	// step 1:- Make a repository call to get user by email
+
+	// step 2:- if user exists or not. if not return error
+
+	// step 3:- if user exists then check the password by utils.Checkhashedpassword
+
+	// step 4:- if the password matches, print JWT token else return error saying password doesn't match
 
 	return nil
 
