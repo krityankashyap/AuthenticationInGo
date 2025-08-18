@@ -59,7 +59,7 @@ func (u *UserServiceImp) LoginUser() error {
 
 	// step 2:- if user exists or not. if not return error
 
-	if err == nil {
+	if user == nil {
 		fmt.Println("No user found with given email")
 		return nil
 	}
