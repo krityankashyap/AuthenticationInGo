@@ -12,7 +12,7 @@ import (
 type UserService interface {
 	GetUserByID() error
 	CreateUser()  error
-	LoginUser()   error
+	LoginUser()   (string,error)
 }
 
 type UserServiceImp struct {
@@ -45,7 +45,7 @@ func (u *UserServiceImp) CreateUser() error {
 	return nil
 }
 
-func (u *UserServiceImp) LoginUser() error {
+func (u *UserServiceImp) LoginUser() (string,error) {
 
 	// Prerequisite : this function will be given email and password as parameter, which we can hardcode for now
      
@@ -57,21 +57,21 @@ func (u *UserServiceImp) LoginUser() error {
 
 	 if err != nil {
 		fmt.Println("User not found")
-		return err
+		return "",err
 	 }
 
 	// step 2:- if user exists or not. if not return error
 
 	if user == nil {
 		fmt.Println("No user found with given email")
-		return nil
+		return "",nil
 	}
 	// step 3:- if user exists then check the password by utils.Checkhashedpassword
    isPasswordValid := utils.CheckHashedPassword(password , user.Password)
 
 	 if !isPasswordValid{
 		fmt.Println("Not a valid password for provided email")
-		return nil
+		return "",nil
 	 }
 	// step 4:- if the password matches, print JWT token else return error saying password doesn't match
  
@@ -86,11 +86,11 @@ func (u *UserServiceImp) LoginUser() error {
 
 	if err != nil {
 		fmt.Println("Failed in making tokens", err)
-		return err
+		return "",err
 	}
 
 	fmt.Println("JWT token:", tokenString)
 
-	return nil
+	return tokenString,nil
 
 }

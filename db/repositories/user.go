@@ -90,6 +90,28 @@ func (u *UserRepositoryImple) GetAll() ([]*models.User,error){
 }
 
 func (u *UserRepositoryImple) DeleteById(id int64) error{
+
+	query := "DELETE FROM users WHERE id=?"
+
+	result,err := u.db.Exec(query,id) // Exec executes a query without returning any rows
+
+	if err != nil{
+		fmt.Println("Error on deleting the user:",err)
+		return err
+	}
+
+	affectedRow, errorRow := result.RowsAffected() // RowsAffected returns the number of rows affected by an update, insert, or delete.
+ 
+	if errorRow != nil{
+     fmt.Println("Error getting updated after deletion", errorRow)
+		 return errorRow
+	}
+
+	if affectedRow == 0 {
+    fmt.Println("No row is deleted, No rows r updated")
+		return nil
+	}
+   fmt.Println("Deleting User in repository:", affectedRow)
 	return nil
 }
 
