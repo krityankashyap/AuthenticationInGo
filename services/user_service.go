@@ -4,6 +4,9 @@ import (
 	db "AuthInGo/db/repositories"
 	"AuthInGo/utils"
 	"fmt"
+
+	jwt "github.com/golang-jwt/jwt/v5"
+	env "AuthInGo/config/env"
 )
 
 type UserService interface {
@@ -72,7 +75,22 @@ func (u *UserServiceImp) LoginUser() error {
 	 }
 	// step 4:- if the password matches, print JWT token else return error saying password doesn't match
  
-	fmt.Println("User logged in successfully, JWT token will be generated here")
+  payload := jwt.MapClaims{
+    "email": user.Email,
+		"id": user.Id,
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload) // this will give a token object not the final token 
+
+	tokenString,err := token.SignedString([]byte(env.Getstring("secret_Key" ,"auth_in_go")))
+
+	if err != nil {
+		fmt.Println("Failed in making tokens", err)
+		return err
+	}
+
+	fmt.Println("JWT token:", tokenString)
+
 	return nil
 
 }
