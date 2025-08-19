@@ -3,7 +3,23 @@ package utils
 import (
 	"encoding/json"
 	"net/http"
+  "github.com/go-playground/validator/v10"
 )
+
+var Validator *validator.Validate
+
+func init(){
+  Validator = NewValidator()
+
+}
+
+func NewValidator() *validator.Validate {
+	// initialize the validator package
+	return validator.New(validator.WithRequiredStructEnabled())
+
+	
+}
+
 
 func WriteJsonResponse(w http.ResponseWriter, status int, data any) error {
    w.Header().Set("Content-Type" , "application/json")  // set the content type to application/json
@@ -13,8 +29,8 @@ func WriteJsonResponse(w http.ResponseWriter, status int, data any) error {
 	 return json.NewEncoder(w).Encode(data)  // NewEncoder returns a new encoder that writes to w. Encode writes the JSON encoding of v to the stream
 }
 
-func Readjson(w http.Request , result any) error {
-	decoder := json.NewDecoder(w.Body)
+func Readjson(r http.Request , result any) error {
+	decoder := json.NewDecoder(r.Body)
 
 	decoder.DisallowUnknownFields() // Prevents unknown fields from being included in the json body
 

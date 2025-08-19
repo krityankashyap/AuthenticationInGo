@@ -1,6 +1,7 @@
 package controller
 
 import (
+	dtos "AuthInGo/dtos"
 	"AuthInGo/services"
 	"AuthInGo/utils"
 	"fmt"
@@ -32,6 +33,23 @@ func (uc *UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 func (uc *UserController) LoginUser(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Login User called in LoginUser controller")
+
+	var payload dtos.UserLogindto // this is the payload we gonna create
+
+	err := utils.Readjson(*r, &payload)
+
+	if err != nil{
+		w.Write([]byte("Something went wrong while logging in"))
+		return
+	}
+
+	validationError := utils.Validator.Struct(&payload)
+
+	if validationError != nil {
+     w.Write([]byte("Invalid input data"))
+		 return
+	}
+
 	jwtToken , err := uc.UserService.LoginUser()
 
 	if err != nil {
