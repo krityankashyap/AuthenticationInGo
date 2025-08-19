@@ -39,7 +39,7 @@ func (uc *UserController) LoginUser(w http.ResponseWriter, r *http.Request) {
 	err := utils.Readjson(*r, &payload)
 
 	if err != nil{
-		w.Write([]byte("Something went wrong while logging in"))
+		utils.WriteJsonErrorResponse(w, http.StatusBadRequest, "Something went wrong while logging", err)
 		return
 	}
 
@@ -50,19 +50,12 @@ func (uc *UserController) LoginUser(w http.ResponseWriter, r *http.Request) {
 		 return
 	}
 
-	jwtToken , err := uc.UserService.LoginUser()
+	jwtToken , err := uc.UserService.LoginUser(&payload)
 
 	if err != nil {
-		w.Write([]byte("Something went wrong while logging in"))
+		utils.WriteJsonErrorResponse(w, http.StatusInternalServerError, "Failed to login", err)
 		return
 	}
-	
-	response := map[string]any{
-		"message": "User login successfully",
-    "data": jwtToken,
-		"success": true,
-		"error": nil,
-	}
   
-	utils.WriteJsonResponse(w, http.StatusOK, response)
+	utils.WriteJsonSuccessResponse(w, http.StatusOK, "User loggin successfully", jwtToken)
 	}

@@ -2,17 +2,19 @@ package services
 
 import (
 	db "AuthInGo/db/repositories"
+	"AuthInGo/dtos"
 	"AuthInGo/utils"
 	"fmt"
 
-	jwt "github.com/golang-jwt/jwt/v5"
 	env "AuthInGo/config/env"
+
+	jwt "github.com/golang-jwt/jwt/v5"
 )
 
 type UserService interface {
 	GetUserByID() error
 	CreateUser()  error
-	LoginUser()   (string,error)
+	LoginUser(payload *dtos.UserLogindto)   (string,error)
 }
 
 type UserServiceImp struct {
@@ -45,12 +47,12 @@ func (u *UserServiceImp) CreateUser() error {
 	return nil
 }
 
-func (u *UserServiceImp) LoginUser() (string,error) {
+func (u *UserServiceImp) LoginUser(payload *dtos.UserLogindto) (string,error) {
 
 	// Prerequisite : this function will be given email and password as parameter, which we can hardcode for now
      
-	email := "example1@gmail.com"
-	password := "example_password"
+	email := payload.Email
+	password := payload.Password
 	// step 1:- Make a repository call to get user by email
       
 	 user,err := u.UserRepository.GetUserByEmail(email)
@@ -75,12 +77,12 @@ func (u *UserServiceImp) LoginUser() (string,error) {
 	 }
 	// step 4:- if the password matches, print JWT token else return error saying password doesn't match
  
-  payload := jwt.MapClaims{
+  jwtPayload := jwt.MapClaims{
     "email": user.Email,
 		"id": user.Id,
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload) // this will give a token object not the final token 
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtPayload) // this will give a token object not the final token 
 
 	tokenString,err := token.SignedString([]byte(env.Getstring("secret_Key" ,"auth_in_go")))
 
