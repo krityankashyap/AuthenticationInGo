@@ -85,8 +85,31 @@ func (u *UserRepositoryImple) GetByID() (*models.User , error) {
 	return nil,nil
 } 
 
-func (u *UserRepositoryImple) GetAll() ([]*models.User,error){
-	return nil,nil
+func (u *UserRepositoryImple) GetAll() ([]*models.User, error) {
+	query := "SELECT id, username, email, created_at, updated_at FROM users"
+	rows, err := u.db.Query(query)
+	if err != nil {
+		fmt.Println("Error fetching users:", err)
+		return nil, err
+	}
+	defer rows.Close() // Ensure rows are closed after processing
+
+	var users []*models.User
+	for rows.Next() {
+		user := &models.User{}
+		if err := rows.Scan(&user.Id, &user.Username, &user.Email, &user.CreatedAt, &user.UpdatedAt); err != nil {
+			fmt.Println("Error scanning user:", err)
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	if err := rows.Err(); err != nil {
+		fmt.Println("Error with rows:", err)
+		return nil, err
+	}
+
+	return users, nil
 }
 
 func (u *UserRepositoryImple) DeleteById(id int64) error{
