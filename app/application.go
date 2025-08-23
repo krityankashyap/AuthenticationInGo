@@ -3,7 +3,7 @@ package app
 import (
 	config "AuthInGo/config/env"
 	"AuthInGo/controller"
-	db "AuthInGo/db/repositories"
+	// db "AuthInGo/db/repositories"
 	"AuthInGo/router"
 	"AuthInGo/services"
 	"fmt"
@@ -20,7 +20,7 @@ type Config struct {
 
 type Application struct {
 	Config Config
-	Store  db.Storage // Assuming storage is defined in db/repositories/storage.go
+	//Store  db.Storage // Assuming storage is defined in db/repositories/storage.go
 }
 
 // Constructor for Config
@@ -36,7 +36,7 @@ func NewConfig() Config {
 func NewApplication(cfg Config) *Application {
 	return &Application{
 		Config: cfg,
-		Store: *db.NewStorage(),
+		// Store: *db.NewStorage(),
 	}
 }
 

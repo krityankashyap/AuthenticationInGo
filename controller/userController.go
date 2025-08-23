@@ -1,61 +1,84 @@
 package controller
 
 import (
-	dtos "AuthInGo/dtos"
+	"AuthInGo/dtos"
 	"AuthInGo/services"
 	"AuthInGo/utils"
 	"fmt"
-
 	"net/http"
 )
 
-type UserController struct { // this struct is gonna depend on the service
+type UserController struct {
 	UserService services.UserService
 }
 
 func NewUserController(_userService services.UserService) *UserController {
-  return &UserController{
+	return &UserController{
 		UserService: _userService,
 	}
 }
 
-func (uc *UserController) GetUserByID(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("GetUserByID called in UserController")
-	uc.UserService.GetUserByID() // Here u typically parse the request body, validate input, and call the service to create user
-	w.Write([]byte("User fetching endpoint done"))
+func (uc *UserController) GetUserById(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Fetching user by ID in UserController")
+	// extract userid from url parameters
+	userId := r.URL.Query().Get("id")
+	if userId == "" {
+		userId = r.Context().Value("userID").(string) // Fallback to context if not in URL
+	}
+
+	fmt.Println("User ID from context or query:", userId)
+
+	if userId == "" {
+		utils.WriteJsonErrorResponse(w, http.StatusBadRequest, "User ID is required", fmt.Errorf("missing user ID"))
+		return
+	}
+	user, err := uc.UserService.GetUserById(userId)
+	if err != nil {
+		utils.WriteJsonErrorResponse(w, http.StatusInternalServerError, "Failed to fetch user", err)
+		return
+	}
+	if user == nil {
+		utils.WriteJsonErrorResponse(w, http.StatusNotFound, "User not found", fmt.Errorf("user with ID %d not found", userId))
+		return
+	}
+	utils.WriteJsonSuccessResponse(w, http.StatusOK, "User fetched successfully", user)
+	fmt.Println("User fetched successfully:", user)
 }
 
 func (uc *UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("CreateUse called in UserController")
-	uc.UserService.CreateUser() // Here u typically parse the request body, validate input, and call the service to create user
-	w.Write([]byte("User fetching endpoint done"))
+	
+	fmt.Println("User create function called in controller")
+
+	payload := r.Context().Value("payload").(dtos.CreateUserRequestDTO)
+
+	fmt.Println("Payload received:", payload)
+
+	user, err := uc.UserService.CreateUser(&payload)
+
+	if err != nil {
+		utils.WriteJsonErrorResponse(w, http.StatusInternalServerError, "Failed to create user", err)
+		return
+	}
+
+	utils.WriteJsonSuccessResponse(w, http.StatusCreated, "User created successfully", user)
+	fmt.Println("User created successfully:", user)
 }
 
 func (uc *UserController) LoginUser(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Login User called in LoginUser controller")
 
-	var payload dtos.UserLogindto // this is the payload we gonna create
+	fmt.Println("Logging in user in UserController")
 
-	err := utils.Readjson(*r, &payload)
+ payload := r.Context().Value("payload").(dtos.UserLogindto) 
 
-	if err != nil{
-		utils.WriteJsonErrorResponse(w, http.StatusBadRequest, "Something went wrong while logging", err)
-		return
-	}
+	fmt.Println("Payload received:", payload)
 
-	validationError := utils.Validator.Struct(&payload)
-
-	if validationError != nil {
-     w.Write([]byte("Invalid input data"))
-		 return
-	}
-
-	jwtToken , err := uc.UserService.LoginUser(&payload)
+	jwtToken, err := uc.UserService.LoginUser(&payload)
 
 	if err != nil {
-		utils.WriteJsonErrorResponse(w, http.StatusInternalServerError, "Failed to login", err)
+		utils.WriteJsonErrorResponse(w, http.StatusInternalServerError, "Failed to login user", err)
 		return
 	}
-  
-	utils.WriteJsonSuccessResponse(w, http.StatusOK, "User loggin successfully", jwtToken)
-	}
+
+	utils.WriteJsonSuccessResponse(w, http.StatusOK, "User logged in successfully", jwtToken)
+
+}

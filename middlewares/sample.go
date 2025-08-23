@@ -1,14 +1,30 @@
 package middlewares
 
 import (
-	"fmt"
+	"AuthInGo/utils"
 	"net/http"
 )
 
-func RequestLogger(next http.Handler) http.Handler {
+func RequestValidatorSample(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var payload any // Define the payload u want to expect
+		
+		// Read and decode the JSON body into the payload
+		err := utils.Readjson(*r , &payload)
 
-	return http.HandlerFunc(func(w http.ResponseWriter , r *http.Request) {
-		fmt.Println("Recieved request", r.Method, r.URL.Path)
-		next.ServeHTTP(w , r) // Call the next handler in the chain
+		if err != nil{
+			utils.WriteJsonErrorResponse(w, http.StatusBadRequest, "Invalid request body", err)
+			return
+		}
+		
+		// Validate the payload using the Validator instance
+		validationerr := utils.Validator.Struct(payload)
+
+		if validationerr != nil {
+			utils.WriteJsonErrorResponse(w, http.StatusBadRequest, "Validation failed", validationerr)
+			return
+		}
+
+		next.ServeHTTP(w,r)
 	})
 }

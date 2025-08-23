@@ -1,98 +1,107 @@
 package services
 
 import (
+	env "AuthInGo/config/env"
 	db "AuthInGo/db/repositories"
+	// "AuthInGo/dto"
 	"AuthInGo/dtos"
+	"AuthInGo/models"
 	"AuthInGo/utils"
 	"fmt"
 
-	env "AuthInGo/config/env"
-
-	jwt "github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type UserService interface {
-	GetUserByID() error
-	CreateUser()  error
-	LoginUser(payload *dtos.UserLogindto)   (string,error)
+	GetUserById(id string) (*models.User, error)
+	CreateUser(payload *dtos.CreateUserRequestDTO) (*models.User, error)
+	LoginUser(payload *dtos.UserLogindto) (string, error)
 }
 
-type UserServiceImp struct {
-    UserRepository db.UserRepository
+type UserServiceImpl struct {
+	userRepository db.UserRepository
 }
 
 func NewUserService(_userRepository db.UserRepository) UserService {
-	return &UserServiceImp{
-		UserRepository: _userRepository,
+	return &UserServiceImpl{
+		userRepository: _userRepository,
 	}
 }
 
-func (u *UserServiceImp) GetUserByID() error{
-	fmt.Println("Fetching user in userService")
-	u.UserRepository.GetByID() // this will call the repository to create the user
-	return nil
+func (u *UserServiceImpl) GetUserById(id string) (*models.User, error) {
+	fmt.Println("Fetching user in UserService")
+	user, err := u.userRepository.GetByID(id)
+	if err != nil {
+		fmt.Println("Error fetching user:", err)
+		return nil, err
+	}
+	return user, nil
 }
 
-func (u *UserServiceImp) CreateUser() error {
-	fmt.Println("Creating User in UserService")
-	password := "example_password"
-	hashedPassword,err := utils.HashPassword(password)
+func (u *UserServiceImpl) CreateUser(payload *dtos.CreateUserRequestDTO) (*models.User, error) {
+	fmt.Println("Creating user in UserService")
 
-	if err!=nil {
-		return nil
+	// Step 1. Hash the password using utils.HashPassword
+	hashedPassword, err := utils.HashPassword(payload.Password)
+	if err != nil {
+		fmt.Println("Error hashing password:", err)
+		return nil, err
 	}
 
-	u.UserRepository.Create("example_Name_1", "example1@gmail.com", hashedPassword)
+	// Step 2. Call the repository to create the user
+	user, err := u.userRepository.Create(payload.Username, payload.Email, hashedPassword)
+	if err != nil {
+		fmt.Println("Error creating user:", err)
+		return nil, err
+	}
 
-	return nil
+	// Step 3. Return the created user
+	return user, nil
 }
 
-func (u *UserServiceImp) LoginUser(payload *dtos.UserLogindto) (string,error) {
-
-	// Prerequisite : this function will be given email and password as parameter, which we can hardcode for now
-     
+func (u *UserServiceImpl) LoginUser(payload *dtos.UserLogindto) (string, error) {
+	// Pre-requisite: This function will be given email and password as parameter, which we can hardcode for now
 	email := payload.Email
 	password := payload.Password
-	// step 1:- Make a repository call to get user by email
-      
-	 user,err := u.UserRepository.GetUserByEmail(email)
 
-	 if err != nil {
-		fmt.Println("User not found")
-		return "",err
-	 }
-
-	// step 2:- if user exists or not. if not return error
-
-	if user == nil {
-		fmt.Println("No user found with given email")
-		return "",nil
-	}
-	// step 3:- if user exists then check the password by utils.Checkhashedpassword
-   isPasswordValid := utils.CheckHashedPassword(password , user.Password)
-
-	 if !isPasswordValid{
-		fmt.Println("Not a valid password for provided email")
-		return "",nil
-	 }
-	// step 4:- if the password matches, print JWT token else return error saying password doesn't match
- 
-  jwtPayload := jwt.MapClaims{
-    "email": user.Email,
-		"id": user.Id,
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtPayload) // this will give a token object not the final token 
-
-	tokenString,err := token.SignedString([]byte(env.Getstring("secret_Key" ,"auth_in_go")))
+	// Step 1. Make a repository call to get the user by email
+	user, err := u.userRepository.GetByEmail(email)
 
 	if err != nil {
-		fmt.Println("Failed in making tokens", err)
-		return "",err
+		fmt.Println("Error fetching user by email:", err)
+		return "", err
 	}
 
-	fmt.Println("JWT token:", tokenString)
+	// Step 2. If user exists, or not. If not exists, return error
+	if user == nil {
+		fmt.Println("No user found with the given email")
+		return "", fmt.Errorf("no user found with email: %s", email)
+	}
 
-	return tokenString,nil
+	// Step 3. If user exists, check the password using utils.CheckPasswordHash
+	isPasswordValid := utils.CheckHashedPassword(password, user.Password)
 
+	if !isPasswordValid {
+		fmt.Println("Password does not match")
+		return "", nil
+	}
+
+	// Step 4. If password matches, print a JWT token, else return error saying password does not match
+	jwtPayload := jwt.MapClaims{
+		"email": user.Email,
+		"id":    user.Id,
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtPayload)
+
+	tokenString, err := token.SignedString([]byte(env.Getstring("JWT_SECRET", "TOKEN")))
+
+	if err != nil {
+		fmt.Println("Error signing token:", err)
+		return "", err
+	}
+
+	fmt.Println("JWT Token:", tokenString)
+
+	return tokenString, nil
 }
